@@ -1,0 +1,7 @@
+{
+  "name": "Amit's Zoya",
+  "description": "A sassy, witty, and intelligent Indian female AI voice assistant, personalized for Amit.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
