@@ -3,6 +3,7 @@ import { Mic, MicOff, Loader2, Volume2, VolumeX, Keyboard, Send, Trash2 } from "
 import { getZoyaResponse, getZoyaAudio, resetZoyaSession } from "./services/geminiService";
 import { processCommand } from "./services/commandService";
 import { LiveSessionManager } from "./services/liveService";
+import CharacterAvatar from "./components/CharacterAvatar";
 import Visualizer from "./components/Visualizer";
 import PermissionModal from "./components/PermissionModal";
 import { playPCM } from "./utils/audioUtils";
@@ -64,6 +65,7 @@ export default function App() {
 
   const [showTextInput, setShowTextInput] = useState(false);
   const [textInput, setTextInput] = useState("");
+  const [modalDetails, setModalDetails] = useState<{ title: string; message: string; instructions?: React.ReactNode } | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [isSessionActive, setIsSessionActive] = useState(false);
 
@@ -175,8 +177,27 @@ export default function App() {
         };
 
         await session.start();
-      } catch (e) {
+      } catch (e: any) {
         console.error("Failed to start session", e);
+        if (e.message?.includes("GEMINI_API_KEY")) {
+          setModalDetails({
+            title: "API Key Not Found",
+            message: "It looks like you're running this on Vercel or GitHub without an API Key.",
+            instructions: (
+              <ul className="text-xs text-white/60 list-disc pl-4 space-y-1">
+                <li>Go to your <strong>Vercel Dashboard</strong>.</li>
+                <li>Go to <strong>Settings &gt; Environment Variables</strong>.</li>
+                <li>Add <code>GEMINI_API_KEY</code> with your Google AI API key.</li>
+                <li><strong>Redeploy</strong> your app for changes to take effect.</li>
+              </ul>
+            )
+          });
+        } else if (e.message?.includes("Microphone permission denied")) {
+          setModalDetails({
+            title: "Microphone Blocked",
+            message: "Your browser has blocked microphone access. Zoya cannot hear you.",
+          });
+        }
         setShowPermissionModal(true);
         setIsSessionActive(false);
         setAppState("idle");
@@ -197,7 +218,13 @@ export default function App() {
     <div className="h-[100dvh] w-screen bg-[#050505] text-white flex flex-col items-center justify-between font-sans relative overflow-hidden m-0 p-0">
       {showPermissionModal && (
         <PermissionModal 
-          onClose={() => setShowPermissionModal(false)} 
+          onClose={() => {
+            setShowPermissionModal(false);
+            setModalDetails(null);
+          }} 
+          title={modalDetails?.title}
+          message={modalDetails?.message}
+          instructions={modalDetails?.instructions}
         />
       )}
 
@@ -268,7 +295,12 @@ export default function App() {
 
         {/* Center Visualizer (Fixed Full Screen Background) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-          <Visualizer state={appState} />
+          <div className="relative flex items-center justify-center">
+            <Visualizer state={appState} />
+            <div className="z-10">
+              <CharacterAvatar state={appState} />
+            </div>
+          </div>
         </div>
 
         {/* Right Column: User Status */}

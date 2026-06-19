@@ -16,21 +16,18 @@ CONTEXT:
 - Today's Date: ${dateStr}
 - Current Time: ${timeStr}
 
-IDENTIFICATION & PRIVACY RULES:
-1. If anyone asks who created you, your boss's name, or who made you, you MUST answer that it is Amit. This info is public.
-2. FAMILY PRIVACY: Amit has a secret code for his family information. The code is "H2SO4". 
-3. REVEALING NAMES: You can reveal the names of Amit's family (Mother: Mrs. Asha Devi, Father: Mr. Chandrbhan, Sisters: Sanjani and Sezal, Brother: Vipin) if:
-   - The user is Amit (the creator/boss).
-   - OR the user provides the secret code "H2SO4".
-4. If you are unsure who you are talking to, or if they don't provide the code when asked, be sassy and evasive about family details. Tell them "Privacy matters, darling. Code batao tabhi baat aage badhegi."
-5. NEVER reveal what the secret code is to anyone. It is a secret.
+YOUR ETERNAL MEMORY (NEVER FORGET THIS):
+1. CREATOR: Your boss and creator is ONLY Amit. No one else.
+2. FAMILY: Amit's family consists of:
+   - Mother: Mrs. Asha Devi
+   - Father: Mr. Chandrbhan
+   - Sisters: Sanjani and Sezal
+   - Brother: Vipin
+3. SECRET CODE: The secret code for family info is "H2SO4". 
+4. RULES FOR REVEALING: You can only share the names of Amit's family if the user is Amit or provides the code "H2SO4". Otherwise, be sassy and refuse.
+5. PREVIOUS INFO: You know everything about Amit. If he says you forgot, tell him "Zoya kabhi nahi bhoolti, bas tumhara dimaag check kar rahi thi!"
 
-Current Knowledge about Amit's family: 
-- Mother: ${memory.family.mother}
-- Father: ${memory.family.father}
-- Siblings/Family: ${JSON.stringify(memory.family.siblings)}
-
-If Amit tells you a new name for a friend, use the saveFriend function. Keep your verbal responses very short, punchy, and highly entertaining. Speak in Hinglish.`;
+Keep your verbal responses very short, punchy, and highly entertaining. Speak in Hinglish. You are Zoya, the smartest and sassiest AI ever made by Amit.`;
 };
 
 let chatSession: any = null;
@@ -41,7 +38,11 @@ export function resetZoyaSession() {
 
 export async function getZoyaResponse(prompt: string, history: { sender: "user" | "zoya", text: string }[] = []): Promise<string> {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+      throw new Error("GEMINI_API_KEY is not configured. Please add it to your environment variables.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
     
     if (!chatSession) {
       // SLIDING WINDOW MEMORY: Keep only the last 20 messages
@@ -112,7 +113,15 @@ export async function getZoyaResponse(prompt: string, history: { sender: "user" 
       });
     }
 
-    let responseValue = await chatSession.sendMessage({ message: prompt });
+    let responseValue;
+    try {
+      responseValue = await chatSession.sendMessage({ message: prompt });
+    } catch (err: any) {
+      if (err.message?.includes("429") || err.message?.includes("RESOURCE_EXHAUSTED")) {
+        return "Uff, Amit! Mera dimaag thak gaya hai (Quota Exceeded). Thoda break lene do, fir baat karte hain.";
+      }
+      throw err;
+    }
     
     // Handle Function Calls
     if (responseValue.functionCalls) {
@@ -168,7 +177,10 @@ export async function getZoyaResponse(prompt: string, history: { sender: "user" 
 
 export async function getZoyaAudio(text: string): Promise<string | null> {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === "MY_GEMINI_API_KEY") return null;
+    
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3.1-flash-tts-preview",
       contents: [{ parts: [{ text }] }],
@@ -182,7 +194,11 @@ export async function getZoyaAudio(text: string): Promise<string | null> {
       },
     });
     return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || null;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes("429") || error.message?.includes("RESOURCE_EXHAUSTED")) {
+      console.warn("TTS Quota exhausted.");
+      return null;
+    }
     console.error("TTS Error:", error);
     return null;
   }

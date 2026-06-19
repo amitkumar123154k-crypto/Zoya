@@ -4,9 +4,12 @@ import { MicOff } from 'lucide-react';
 
 interface Props {
   onClose: () => void;
+  title?: string;
+  message?: string;
+  instructions?: React.ReactNode;
 }
 
-export default function PermissionModal({ onClose }: Props) {
+export default function PermissionModal({ onClose, title, message, instructions }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
       <motion.div 
@@ -20,18 +23,20 @@ export default function PermissionModal({ onClose }: Props) {
           <MicOff size={32} className="text-red-400" />
         </div>
         
-        <h2 className="text-2xl font-serif font-medium text-white mb-3">Microphone Blocked</h2>
+        <h2 className="text-2xl font-serif font-medium text-white mb-3">{title || "Microphone Blocked"}</h2>
         <p className="text-white/60 text-sm mb-6 leading-relaxed">
-          Your browser has blocked microphone access for this site. Zoya cannot hear you until you allow it.
+          {message || "Your browser has blocked microphone access for this site. Zoya cannot hear you until you allow it."}
         </p>
         
         <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left w-full mb-8">
-          <p className="text-sm text-white/80 font-medium mb-2">How to fix this:</p>
-          <ol className="text-xs text-white/60 list-decimal pl-4 space-y-2">
-            <li>Click the <strong>lock icon (🔒)</strong> or <strong>tune icon (⚙️)</strong> next to the URL bar at the top of your browser.</li>
-            <li>Find <strong>Microphone</strong> and change it to <strong>Allow</strong>.</li>
-            <li>Refresh this page.</li>
-          </ol>
+          <p className="text-sm text-white/80 font-medium mb-2">Details:</p>
+          {instructions || (
+            <ol className="text-xs text-white/60 list-decimal pl-4 space-y-2">
+              <li>Click the <strong>lock icon (🔒)</strong> or <strong>tune icon (⚙️)</strong> next to the URL bar at the top of your browser.</li>
+              <li>Find <strong>Microphone</strong> and change it to <strong>Allow</strong>.</li>
+              <li>Refresh this page.</li>
+            </ol>
+          )}
         </div>
         
         <div className="flex flex-col w-full gap-3">

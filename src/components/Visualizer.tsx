@@ -98,16 +98,23 @@ export default function Visualizer({ state }: VisualizerProps) {
       {/* Core Circle */}
       <motion.div
         animate={getPulseAnimation()}
-        className={`absolute w-[25%] h-[25%] rounded-full border-[1px] ${theme.border} bg-black/40 backdrop-blur-md flex items-center justify-center shadow-[inset_0_0_30px_rgba(0,0,0,0.5)]`}
-        style={{ boxShadow: `0 0 40px ${theme.color}, inset 0 0 30px ${theme.color}` }}
+        className={`absolute w-72 h-72 md:w-[450px] md:h-[450px] rounded-full border-2 ${theme.border} bg-black/20 backdrop-blur-sm flex items-center justify-center z-10`}
+        style={{ 
+          boxShadow: `0 0 60px ${theme.color}20, inset 0 0 30px ${theme.color}20`,
+        }}
       >
-        {/* Center Text */}
+        {/* Glow behind the text */}
         <div 
-          className="font-bold tracking-[0.3em] text-xl md:text-3xl lg:text-4xl text-white"
-          style={{ textShadow: `0 0 15px ${theme.color}, 0 0 30px ${theme.color}` }}
-        >
-          ZOYA
-        </div>
+          className="absolute inset-0 rounded-full opacity-10"
+          style={{ backgroundColor: theme.color }}
+        />
+        
+        {/* Small internal ring */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className={`absolute w-[95%] h-[95%] rounded-full border border-dashed ${theme.border} opacity-20`}
+        />
       </motion.div>
     </div>
   );
