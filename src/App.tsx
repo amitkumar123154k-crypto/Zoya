@@ -3,7 +3,6 @@ import { Mic, MicOff, Loader2, Volume2, VolumeX, Keyboard, Send, Trash2 } from "
 import { getZoyaResponse, getZoyaAudio, resetZoyaSession } from "./services/geminiService";
 import { processCommand } from "./services/commandService";
 import { LiveSessionManager } from "./services/liveService";
-import CharacterAvatar from "./components/CharacterAvatar";
 import Visualizer from "./components/Visualizer";
 import PermissionModal from "./components/PermissionModal";
 import { playPCM } from "./utils/audioUtils";
@@ -295,12 +294,7 @@ export default function App() {
 
         {/* Center Visualizer (Fixed Full Screen Background) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-          <div className="relative flex items-center justify-center">
-            <Visualizer state={appState} />
-            <div className="z-10">
-              <CharacterAvatar state={appState} />
-            </div>
-          </div>
+          <Visualizer state={appState} />
         </div>
 
         {/* Right Column: User Status */}
